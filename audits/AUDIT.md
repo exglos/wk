@@ -10,11 +10,8 @@ Audit date: 2026-11-27
 
 The audit reviewed Witness Key (WK), a cbBTC-backed protocol accounting token,
 in `src/WitnessKey.sol` at commit `99006348c1b2d1938c5de1bdd17957fd2489fa03`.
-**No critical, high-severity or medium issues were found.**
-The audit identified **one low-severity finding**,
-acknowledged with no change required.
-and **four informational findings**,
-accepted by design and retained to document the tradeoff.
+The review found **no critical, high, medium or low** severity issues,
+and **6 informational** findings.
 
 Notable risks are dependency on cbBTC contract, operational immutability of registrar/oracle roles and deliberate non-ERC20 allowance incompatibility.
 
@@ -62,6 +59,7 @@ Continuous monitoring of cbBTC health is required.
 The registrar and oracle roles are treated as trusted.
 - `vaultRegistrar`: must register vaults and ordinals accurately.
 - `ordinalOracle`: must report ordinal movement accurately.
+
 Both roles are immutable by design.
 This removes governance and admin-key risk,
 but turns deployment mistakes and key compromise into permanent conditions.
@@ -94,6 +92,7 @@ forge test -vvv
 ```
 73 tests passed across four suites, with no failure.
 Tests covers the core economic flows, the provenance and access-control logic.
+
 Implemented unit tests for:
 - First-minter bootstrap behaviour.
 - Subsequent distribution application.
@@ -105,10 +104,11 @@ Implemented unit tests for:
 - Access control on registrar and oracle.
 
 Slither 0.11.6 was run with:
-```
+```sh
 slither src/WitnessKey.sol --exclude-dependencies
 ```
 The run reported no WitnessKey-specific high/medium severity findings.
+
 It reported 3 informational findings:
 - `pragma`: accepted - contract compiler version satisfies all dependencies.
 - `solc-version`: accepted - known compiler issues do not apply to this contract.
@@ -179,6 +179,7 @@ Status: Accepted\
 Location: `acquire`
 
 `MAX_ACQUIRE` limits one call to 1,000,000 sats, but any user can call `acquire` repeatedly.
+
 So this works fine:
 ```
 Alice → acquire(1,000,000) → success
@@ -216,7 +217,7 @@ Recommendation:
 ### F-05: Claim and recirculate may leave one unit of rounding dust
 
 Severity: Informational\
-Status: Accepted\
+Status: Open\
 Location: `recirculationOf`
 
 Rounding in calculations can leave `recirculationOf` returning 1 unit after a claim or recirculate,
@@ -227,6 +228,21 @@ Impact:
 
 Recommendation:
 - Document the rounding behaviour.
+
+### F-06: Vault registered event field is unclear
+
+Severity: Informational\
+Status: Open\
+Location: `VaultRegistered`
+
+The `oktEmbedded` field does not clearly describe the amount of WK minted.
+There is no effect on funds or logic.
+
+Impact:
+- Integrators may misread the field.
+
+Recommendation:
+- Rename the field.
 
 
 ## Deployment checklist
@@ -255,7 +271,7 @@ Testing and analysis reduce risk but cannot guarantee that every issue was found
 
 ## Conclusion
 
-The reviewed implementation is broadly coherent and appears mainnet-ready.
+The reviewed implementation is broadly coherent and suitable for deployment.
 
 To reduce risk and maintain security and reliability over time, we recommend the following:
 - **Monitor cbBTC** to confirm it behaves as expected and stays on-peg.
