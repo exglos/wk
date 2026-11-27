@@ -91,7 +91,7 @@ The Foundry test suite was run with:
 forge test -vvv
 ```
 73 tests passed across four suites, with no failure.
-Tests covers the core economic flows, the provenance and access-control logic.
+Tests cover the core economic flows, the provenance and access-control logic.
 
 Implemented unit tests for:
 - First-minter bootstrap behaviour.
